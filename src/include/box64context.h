@@ -293,9 +293,4 @@ x64emu_t* thread_get_emu(void);
 // relock the muxtex that were unlocked
 void relockMutex(int locks);
 
-    int                t6_workaround;
-} box64context_t;
-
-extern box64context_t *my_context; // global context
-
 #endif //__BOX64CONTEXT_H_
