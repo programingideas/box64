@@ -293,7 +293,7 @@ x64emu_t* thread_get_emu(void);
 // relock the muxtex that were unlocked
 void relockMutex(int locks);
 
-    int                t6_workaround; // Black Ops 2 memory patch flag
+    int                t6_workaround;
 } box64context_t;
 
 extern box64context_t *my_context; // global context
