@@ -47,6 +47,9 @@
 
 #include "signal_private.h"
 
+// Stark Mode Global Flag for Black Ops 2
+extern int box64_t6sp_workaround;
+
 static void sigstack_destroy(void* p)
 {
     x64_stack_t *ss = (x64_stack_t*)p;
