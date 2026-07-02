@@ -435,7 +435,16 @@ int my_sigactionhandler_oldcode_64(x64emu_t* emu, int32_t sig, int simple, sigin
     sigcontext->uc_mcontext.gregs[X64_TRAPNO] = 0;
     if(sig==X64_SIGBUS)
         sigcontext->uc_mcontext.gregs[X64_TRAPNO] = 17;
-    else if(sig==X64_SIGSEGV) {
+        else if(sig==X64_SIGSEGV) {
+        // Black Ops 2 Memory Protection Fix
+        if(box64_t6sp_workaround && info->si_addr) {
+            uintptr_t page_start = (uintptr_t)info->si_addr & ~(uintptr_t)(0xFFF); // Align to 4KB page boundary
+            // Force the page to be readable, writable, and executable
+            if(mprotect((void*)page_start, 4096, PROT_READ | PROT_WRITE | PROT_EXEC) == 0) {
+                // Success! Return 0 from the signal handler to retry the failing instruction
+                return 0; 
+            }
+        }
         if((uintptr_t)info->si_addr == sigcontext->uc_mcontext.gregs[X64_RIP]) {
             if(info->si_errno==0xbad0) {
                 //bad opcode
