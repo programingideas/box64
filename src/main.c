@@ -1,6 +1,7 @@
 #include "core.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
 // Stark Mode Global Flag for Black Ops 2
 int box64_t6sp_workaround = 0;
@@ -11,6 +12,7 @@ int main(int argc, const char **argv, char **env) {
     for (int i = 0; i < argc; ++i) {
         if (argv[i] && (strstr(argv[i], "t6sp.exe") || strstr(argv[i], "t6zm.exe") || strstr(argv[i], "t6mp.exe"))) {
             box64_t6sp_workaround = 1;
+            printf("[BOX64] Black Ops 2 workaround ACTIVATED via argv[%d]\n", i);
             break;
         }
     }
