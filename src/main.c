@@ -19,7 +19,7 @@ int main(int argc, const char **argv, char **env) {
                     lower_arg[j] = tolower((unsigned char)lower_arg[j]);
                 }
 
-                if (strstr(lower_arg, "t6sp.exe") || strndup && (strstr(lower_arg, "t6zm.exe") || strstr(lower_arg, "t6mp.exe"))) {
+                if (strstr(lower_arg, "t6sp.exe") || strstr(lower_arg, "t6zm.exe") || strstr(lower_arg, "t6mp.exe")) {
                     box64_t6sp_workaround = 1;
                     printf("[BOX64] Black Ops 2 workaround ACTIVATED via argv[%d]: %s\n", i, argv[i]);
                     free(lower_arg);
