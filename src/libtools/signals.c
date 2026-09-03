@@ -47,9 +47,6 @@
 
 #include "signal_private.h"
 
-// Stark Mode Global Flag for Black Ops 2
-extern int box64_t6sp_workaround;
-
 static void sigstack_destroy(void* p)
 {
     x64_stack_t *ss = (x64_stack_t*)p;
@@ -435,16 +432,7 @@ int my_sigactionhandler_oldcode_64(x64emu_t* emu, int32_t sig, int simple, sigin
     sigcontext->uc_mcontext.gregs[X64_TRAPNO] = 0;
     if(sig==X64_SIGBUS)
         sigcontext->uc_mcontext.gregs[X64_TRAPNO] = 17;
-        else if(sig==X64_SIGSEGV) {
-        // Black Ops 2 Memory Protection Fix
-        if(box64_t6sp_workaround && info->si_addr) {
-            uintptr_t page_start = (uintptr_t)info->si_addr & ~(uintptr_t)(0xFFF); // Align to 4KB page boundary
-            // Force the page to be readable, writable, and executable
-            if(mprotect((void*)page_start, 4096, PROT_READ | PROT_WRITE | PROT_EXEC) == 0) {
-                // Success! Return 0 from the signal handler to retry the failing instruction
-                return 0; 
-            }
-        }
+    else if(sig==X64_SIGSEGV) {
         if((uintptr_t)info->si_addr == sigcontext->uc_mcontext.gregs[X64_RIP]) {
             if(info->si_errno==0xbad0) {
                 //bad opcode
@@ -799,36 +787,6 @@ void my_box64signalhandler(int32_t sig, siginfo_t* info, void * ucntx)
     void* rsp = NULL;
     x64emu_t* emu = thread_get_emu();
     int tid = GetTID();
-    // =========================================================================
-    // START OF STARK MODE OVERRIDE FOR BLACK OPS 2
-    // =========================================================================
-    extern int box64_t6sp_workaround;
-    if(sig == X64_SIGSEGV && box64_t6sp_workaround) {
-        // Condition 1: Address-level protection bypass (Self-modifying / Obfuscation code)
-        if (addr != NULL && (uintptr_t)addr > 0x1000) {
-            uintptr_t page_start = (uintptr_t)addr & ~(uintptr_t)0xFFF;
-            if (mprotect((void*)page_start, 4096, PROT_READ | PROT_WRITE | PROT_EXEC) == 0) {
-                return; // Memory successfully unlocked, retry the instruction
-            }
-        }       
-        // Condition 2: Null Pointer Dereference bypass (Engine Structure Mismatch)
-        if (addr == (void*)0x3bc) {
-            static int null_bypass_count = 0;
-            if (null_bypass_count < 5 && p != NULL) {
-                null_bypass_count++;
-                printf_log(LOG_INFO, "Stark Mode: Bypassing Black Ops 2 Null Pointer offset 0x3bc!\n");
-                
-                // Advance execution context past the broken instruction (typically 6 bytes)
-                #ifdef __aarch64__
-                p->uc_mcontext.pc += 6; 
-                #endif
-                return; // Skip out of the signal handler back to execution
-            }
-        }
-    }
-    // =========================================================================
-    // END OF STARK MODE OVERRIDE
-    // =========================================================================
 #ifdef __aarch64__
     void * pc = (void*)p->uc_mcontext.pc;
     struct fpsimd_context *fpsimd = NULL;
